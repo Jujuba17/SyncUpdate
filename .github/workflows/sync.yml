@@ -1,5 +1,3 @@
-# Editar o workflow
-cat > .github/workflows/sync.yml << 'EOF'
 name: Sync Freshdesk to Jira
 
 on:
@@ -131,4 +129,3 @@ except Exception as e:
           *.log
           logs/
         retention-days: 7
-EOF
