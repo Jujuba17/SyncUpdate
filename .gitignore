@@ -1,5 +1,5 @@
 # Credenciais e configurações sensíveis
-config/grupo_multi.py
+config/grupo_multi_teste.py
 config/*_real.py
 .env
 .env.*

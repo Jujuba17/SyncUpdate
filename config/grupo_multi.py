@@ -16,7 +16,7 @@ FRESHDESK_DOMAIN = "jhuliane17"  # Ex: "minhaempresa"
 # CONFIGURAÇÕES JIRA
 JIRA_BASE_URL = "https://julianesilva.atlassian.net"
 JIRA_EMAIL = "jhuliane17@gmail.com"
-JIRA_PROJECT_KEY = "SEK"                       # Ex: "SUP", "HELP", "TICKET"
+JIRA_PROJECT_KEY = "LOGBEE"                       # Ex: "SUP", "HELP", "TICKET"
 
 # MAPEAMENTO DE STATUS (ajuste conforme workflow do Jira do cliente)
 FRESHDESK_TO_JIRA_TRANSITIONS = {

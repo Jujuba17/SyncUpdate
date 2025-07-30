@@ -11,12 +11,12 @@ import os
 # =============================================================================
 
 # DOMÍNIO FRESHDESK (apenas o nome, sem .freshdesk.com)
-FRESHDESK_DOMAIN = "jhuliane17"  # Ex: "minhaempresa"
+FRESHDESK_DOMAIN = "SUBSTITUA_PELO_DOMINIO_DO_CLIENTE"  # Ex: "minhaempresa"
 
 # CONFIGURAÇÕES JIRA
-JIRA_BASE_URL = "https://julianesilva.atlassian.net"
-JIRA_EMAIL = "jhuliane17@gmail.com"
-JIRA_PROJECT_KEY = "SEK"                       # Ex: "SUP", "HELP", "TICKET"
+JIRA_BASE_URL = "https://CLIENTE.atlassian.net"  # Ex: "https://minhaempresa.atlassian.net"
+JIRA_EMAIL = "EMAIL_DO_CLIENTE@DOMINIO.COM"     # Ex: "admin@minhaempresa.com"
+JIRA_PROJECT_KEY = "PROJ"                       # Ex: "SUP", "HELP", "TICKET"
 
 # MAPEAMENTO DE STATUS (ajuste conforme workflow do Jira do cliente)
 FRESHDESK_TO_JIRA_TRANSITIONS = {
