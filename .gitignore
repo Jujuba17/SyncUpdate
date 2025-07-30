@@ -1,6 +1,8 @@
 # Credenciais e configurações sensíveis
 config/grupo_multi_teste.py
 config/*_real.py
+services/syncold.py
+
 .env
 .env.*
 
