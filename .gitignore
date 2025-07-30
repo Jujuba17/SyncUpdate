@@ -1,7 +1,11 @@
 # Credenciais e configurações sensíveis
 config/grupo_multi_teste.py
+config/grupo_SEK_teste.py
 config/*_real.py
 services/syncold.py
+disgnostico*
+mapear.py
+
 
 .env
 .env.*
