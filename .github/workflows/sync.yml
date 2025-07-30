@@ -1,3 +1,4 @@
+
 name: Sync Freshdesk to Jira
 
 on:
@@ -39,58 +40,92 @@ jobs:
         echo "=== Conteúdo config/ ==="
         ls -la config/ || echo "Pasta config não existe"
         
-    - name: Create config file
+    - name: Validate config file exists
+      env:
+        PROVIDER: ${{ github.event.inputs.provider || 'grupo_multi' }}
+      run: |
+        echo "=== Verificando se arquivo de configuração existe ==="
+        CONFIG_FILE="config/${PROVIDER}.py"
+        
+        if [ ! -f "$CONFIG_FILE" ]; then
+          echo "❌ Arquivo de configuração não encontrado: $CONFIG_FILE"
+          echo "Arquivos disponíveis na pasta config/:"
+          ls -la config/ || echo "Pasta config não existe"
+          exit 1
+        fi
+        
+        echo "✅ Arquivo de configuração encontrado: $CONFIG_FILE"
+        echo "=== Conteúdo do arquivo (primeiras 20 linhas) ==="
+        head -20 "$CONFIG_FILE"
+        
+    - name: Setup config with environment variables
       env:
         FRESHDESK_API_KEY: ${{ secrets.FRESHDESK_API_KEY }}
         JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        PROVIDER: ${{ github.event.inputs.provider || 'grupo_multi' }}
       run: |
-        echo "=== Criando arquivo de configuração ==="
+        echo "=== Preparando ambiente com variáveis ==="
+        echo "Provider selecionado: $PROVIDER"
+        echo "FRESHDESK_API_KEY: ${FRESHDESK_API_KEY:0:10}..." # Mostra só os primeiros chars
+        echo "JIRA_API_TOKEN: ${JIRA_API_TOKEN:0:10}..."
+        
+        # Garante que a pasta config existe e tem __init__.py
         mkdir -p config
         touch config/__init__.py
-        cat > config/grupo_multi.py << 'EOL'
-        # -*- coding: utf-8 -*-
-        import os
         
-        FRESHDESK_DOMAIN = "jhuliane17"
-        FRESHDESK_API_KEY = "${{ secrets.FRESHDESK_API_KEY }}"
-        
-        JIRA_BASE_URL = "https://julianesilva.atlassian.net"
-        JIRA_EMAIL = "jhuliane17@gmail.com"
-        JIRA_API_TOKEN = "${{ secrets.JIRA_API_TOKEN }}"
-        JIRA_PROJECT_KEY = "LOGBEE"
-        
-        FRESHDESK_TO_JIRA_TRANSITIONS = {
-            2: "11", 3: "31", 4: "41", 5: "41", 6: "21", 7: "21",
-        }
-        
-        DEFAULT_SYNC_HOURS = 2
-        TICKET_TO_ISSUE_PREFIX = f"{JIRA_PROJECT_KEY}-"
-        RATE_LIMIT_DELAY = 0.5
-        
-        FRESHDESK_STATUS_NAMES = {
-            2: "Open", 3: "Pending", 4: "Resolved",
-            5: "Closed", 6: "Waiting on Customer", 7: "Waiting on Third Party"
-        }
-        EOL
-        echo "=== Verificando arquivo criado ==="
-        ls -la config/
-        head -10 config/grupo_multi.py
-        
-    - name: Debug - Test import
+    - name: Debug - Test import and validate config
+      env:
+        FRESHDESK_API_KEY: ${{ secrets.FRESHDESK_API_KEY }}
+        JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        PROVIDER: ${{ github.event.inputs.provider || 'grupo_multi' }}
       run: |
-        echo "=== Testando importação ==="
+        echo "=== Testando importação e validando configuração ==="
         python -c "
-        import sys
-        sys.path.append('.')
-        try:
-            from config import grupo_multi
-            print('✅ Importação funcionou!')
-            print(f'Domain: {grupo_multi.FRESHDESK_DOMAIN}')
-        except Exception as e:
-            print(f'❌ Erro: {e}')
-        "
+import sys
+import os
+sys.path.append('.')
+
+# Configura as variáveis de ambiente
+os.environ['FRESHDESK_API_KEY'] = '${{ secrets.FRESHDESK_API_KEY }}'
+os.environ['JIRA_API_TOKEN'] = '${{ secrets.JIRA_API_TOKEN }}'
+
+try:
+    # Importa dinamicamente o módulo de configuração
+    provider = '$PROVIDER'
+    config_module = __import__(f'config.{provider}', fromlist=[provider])
+    
+    print('✅ Importação funcionou!')
+    print(f'📁 Provider: {provider}')
+    print(f'🌐 Freshdesk Domain: {getattr(config_module, \"FRESHDESK_DOMAIN\", \"NÃO DEFINIDO\")}')
+    print(f'🔗 Jira Base URL: {getattr(config_module, \"JIRA_BASE_URL\", \"NÃO DEFINIDO\")}')
+    print(f'📧 Jira Email: {getattr(config_module, \"JIRA_EMAIL\", \"NÃO DEFINIDO\")}')
+    print(f'🎯 Jira Project Key: {getattr(config_module, \"JIRA_PROJECT_KEY\", \"NÃO DEFINIDO\")}')
+    
+    # Valida se as credenciais estão sendo carregadas
+    api_key = getattr(config_module, 'FRESHDESK_API_KEY', 'NÃO DEFINIDO')
+    jira_token = getattr(config_module, 'JIRA_API_TOKEN', 'NÃO DEFINIDO')
+    
+    if 'COLE_SUA_API_KEY_AQUI' in str(api_key) or 'NÃO DEFINIDO' in str(api_key):
+        print('⚠️  FRESHDESK_API_KEY parece não estar configurada corretamente')
+    else:
+        print(f'🔑 Freshdesk API Key: {str(api_key)[:10]}...')
+        
+    if 'COLE_SEU_TOKEN_AQUI' in str(jira_token) or 'NÃO DEFINIDO' in str(jira_token):
+        print('⚠️  JIRA_API_TOKEN parece não estar configurada corretamente')
+    else:
+        print(f'🎫 Jira API Token: {str(jira_token)[:10]}...')
+        
+except Exception as e:
+    print(f'❌ Erro na importação: {e}')
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+"
         
     - name: Run sync
+      env:
+        FRESHDESK_API_KEY: ${{ secrets.FRESHDESK_API_KEY }}
+        JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
       run: |
         echo "=== Executando sincronização ==="
         python main.py ${{ github.event.inputs.provider || 'grupo_multi' }} --hours ${{ github.event.inputs.sync_hours || '2' }}

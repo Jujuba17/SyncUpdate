@@ -13,7 +13,7 @@ FRESHDESK_API_KEY = os.getenv('FRESHDESK_API_KEY', 'COLE_SUA_API_KEY_AQUI')
 JIRA_BASE_URL = "https://SEUDOMINIO.atlassian.net"  # Ex: "https://minhaempresa.atlassian.net"
 JIRA_EMAIL = "SEU_EMAIL@EMPRESA.COM"
 JIRA_API_TOKEN = os.getenv('JIRA_API_TOKEN', 'COLE_SEU_TOKEN_AQUI')
-JIRA_PROJECT_KEY = "SEU_PROJETO"  # Ex: "PROJ"
+JIRA_PROJECT_KEY = "SEK"  # Ex: "PROJ"
 
 # MAPEAMENTO DE STATUS (ajuste conforme seu workflow)
 FRESHDESK_TO_JIRA_TRANSITIONS = {
