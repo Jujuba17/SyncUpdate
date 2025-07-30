@@ -31,4 +31,53 @@ jobs:
         FRESHDESK_API_KEY: ${{ secrets.FRESHDESK_API_KEY }}
         JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
       run: |
-        python main.py grupo_multi --hours 2
+        echo "=== Criando arquivo de configuração ==="
+        mkdir -p config
+        touch config/__init__.py
+        cat > config/grupo_multi.py << 'EOL'
+        # -*- coding: utf-8 -*-
+        import os
+        
+        FRESHDESK_DOMAIN = "jhuliane17"
+        FRESHDESK_API_KEY = "${{ secrets.FRESHDESK_API_KEY }}"
+        
+        JIRA_BASE_URL = "https://julianesilva.atlassian.net"
+        JIRA_EMAIL = "jhuliane17@gmail.com"
+        JIRA_API_TOKEN = "${{ secrets.JIRA_API_TOKEN }}"
+        JIRA_PROJECT_KEY = "LOGBEE"
+        
+        FRESHDESK_TO_JIRA_TRANSITIONS = {
+            2: "11", 3: "31", 4: "41", 5: "41", 6: "21", 7: "21",
+        }
+        
+        DEFAULT_SYNC_HOURS = 2
+        TICKET_TO_ISSUE_PREFIX = f"{JIRA_PROJECT_KEY}-"
+        RATE_LIMIT_DELAY = 0.5
+        
+        FRESHDESK_STATUS_NAMES = {
+            2: "Open", 3: "Pending", 4: "Resolved",
+            5: "Closed", 6: "Waiting on Customer", 7: "Waiting on Third Party"
+        }
+        EOL
+        echo "=== Verificando arquivo criado ==="
+        ls -la config/
+        head -10 config/grupo_multi.py
+        
+    - name: Debug - Test import
+      run: |
+        echo "=== Testando importação ==="
+        python -c "
+        import sys
+        sys.path.append('.')
+        try:
+            from config import grupo_multi
+            print('✅ Importação funcionou!')
+            print(f'Domain: {grupo_multi.FRESHDESK_DOMAIN}')
+        except Exception as e:
+            print(f'❌ Erro: {e}')
+        "
+        
+    - name: Run sync
+      run: |
+        echo "=== Executando sincronização ==="
+        python main.py ${{ github.event.inputs.provider || 'grupo_multi' }} --hours ${{ github.event.inputs.sync_hours || '2' }}
