@@ -66,10 +66,9 @@ jobs:
       run: |
         echo "=== Preparando ambiente com variáveis ==="
         echo "Provider selecionado: $PROVIDER"
-        echo "FRESHDESK_API_KEY: ${FRESHDESK_API_KEY:0:10}..." # Mostra só os primeiros chars
+        echo "FRESHDESK_API_KEY: ${FRESHDESK_API_KEY:0:10}..." 
         echo "JIRA_API_TOKEN: ${JIRA_API_TOKEN:0:10}..."
         
-        # Garante que a pasta config existe e tem __init__.py
         mkdir -p config
         touch config/__init__.py
         
@@ -81,46 +80,43 @@ jobs:
       run: |
         echo "=== Testando importação e validando configuração ==="
         python -c "
-import sys
-import os
-sys.path.append('.')
+        import sys
+        import os
+        sys.path.append('.')
 
-# Configura as variáveis de ambiente
-os.environ['FRESHDESK_API_KEY'] = '${{ secrets.FRESHDESK_API_KEY }}'
-os.environ['JIRA_API_TOKEN'] = '${{ secrets.JIRA_API_TOKEN }}'
+        os.environ['FRESHDESK_API_KEY'] = '${{ secrets.FRESHDESK_API_KEY }}'
+        os.environ['JIRA_API_TOKEN'] = '${{ secrets.JIRA_API_TOKEN }}'
 
-try:
-    # Importa dinamicamente o módulo de configuração
-    provider = '$PROVIDER'
-    config_module = __import__(f'config.{provider}', fromlist=[provider])
-    
-    print('✅ Importação funcionou!')
-    print(f'📁 Provider: {provider}')
-    print(f'🌐 Freshdesk Domain: {getattr(config_module, \"FRESHDESK_DOMAIN\", \"NÃO DEFINIDO\")}')
-    print(f'🔗 Jira Base URL: {getattr(config_module, \"JIRA_BASE_URL\", \"NÃO DEFINIDO\")}')
-    print(f'📧 Jira Email: {getattr(config_module, \"JIRA_EMAIL\", \"NÃO DEFINIDO\")}')
-    print(f'🎯 Jira Project Key: {getattr(config_module, \"JIRA_PROJECT_KEY\", \"NÃO DEFINIDO\")}')
-    
-    # Valida se as credenciais estão sendo carregadas
-    api_key = getattr(config_module, 'FRESHDESK_API_KEY', 'NÃO DEFINIDO')
-    jira_token = getattr(config_module, 'JIRA_API_TOKEN', 'NÃO DEFINIDO')
-    
-    if 'COLE_SUA_API_KEY_AQUI' in str(api_key) or 'NÃO DEFINIDO' in str(api_key):
-        print('⚠️  FRESHDESK_API_KEY parece não estar configurada corretamente')
-    else:
-        print(f'🔑 Freshdesk API Key: {str(api_key)[:10]}...')
-        
-    if 'COLE_SEU_TOKEN_AQUI' in str(jira_token) or 'NÃO DEFINIDO' in str(jira_token):
-        print('⚠️  JIRA_API_TOKEN parece não estar configurada corretamente')
-    else:
-        print(f'🎫 Jira API Token: {str(jira_token)[:10]}...')
-        
-except Exception as e:
-    print(f'❌ Erro na importação: {e}')
-    import traceback
-    traceback.print_exc()
-    sys.exit(1)
-"
+        try:
+            provider = '${{ github.event.inputs.provider || 'grupo_multi' }}'
+            config_module = __import__(f'config.{provider}', fromlist=[provider])
+            
+            print('✅ Importação funcionou!')
+            print(f'📁 Provider: {provider}')
+            print(f'🌐 Freshdesk Domain: {getattr(config_module, \"FRESHDESK_DOMAIN\", \"NÃO DEFINIDO\")}')
+            print(f'🔗 Jira Base URL: {getattr(config_module, \"JIRA_BASE_URL\", \"NÃO DEFINIDO\")}')
+            print(f'📧 Jira Email: {getattr(config_module, \"JIRA_EMAIL\", \"NÃO DEFINIDO\")}')
+            print(f'🎯 Jira Project Key: {getattr(config_module, \"JIRA_PROJECT_KEY\", \"NÃO DEFINIDO\")}')
+            
+            api_key = getattr(config_module, 'FRESHDESK_API_KEY', 'NÃO DEFINIDO')
+            jira_token = getattr(config_module, 'JIRA_API_TOKEN', 'NÃO DEFINIDO')
+            
+            if 'COLE_SUA_API_KEY_AQUI' in str(api_key) or 'NÃO DEFINIDO' in str(api_key):
+                print('⚠️  FRESHDESK_API_KEY parece não estar configurada corretamente')
+            else:
+                print(f'🔑 Freshdesk API Key: {str(api_key)[:10]}...')
+                
+            if 'COLE_SEU_TOKEN_AQUI' in str(jira_token) or 'NÃO DEFINIDO' in str(jira_token):
+                print('⚠️  JIRA_API_TOKEN parece não estar configurada corretamente')
+            else:
+                print(f'🎫 Jira API Token: {str(jira_token)[:10]}...')
+                
+        except Exception as e:
+            print(f'❌ Erro na importação: {e}')
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+        "
         
     - name: Run sync
       env:
