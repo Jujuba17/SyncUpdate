@@ -1,19 +1,19 @@
 
 name: Sync Freshdesk to Jira
 
-on:
-  schedule:
-    - cron: '0 */2 * * *'
-  workflow_dispatch:
-    inputs:
-      sync_hours:
-        description: 'Horas para sincronizar'
-        required: false
-        default: '2'
-      provider:
-        description: 'Provider para sincronizar'
-        required: false
-        default: 'grupo_multi'
+#on:
+#  schedule:
+#    - cron: '0 */2 * * *'
+#  workflow_dispatch:
+#    inputs:
+#      sync_hours:
+#        description: 'Horas para sincronizar'
+#        required: false
+#        default: '2'
+#      provider:
+#        description: 'Provider para sincronizar'
+#        required: false
+#        default: 'grupo_multi'
 
 jobs:
   sync:
